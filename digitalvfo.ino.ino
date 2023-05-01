@@ -56,7 +56,7 @@ const int8_t BAND_20_MTRS = 7;
 #define BandBottom       (sizeof(MhzBand) / sizeof(MhzBand[0]))
 #define BandTop       (sizeof(UpperFrequency) / sizeof(UpperFrequency[0]))
 // Variables will change:
-unsigned int BandNumber;  //sets band
+unsigned int BandNumber=0;  //sets band
 volatile int8_t tx; //FOR TX OUTPUT
 unsigned long iffreq = 0; // set the IF frequency in Hz.
 // set this to your wanted tuning rate in Hz.
@@ -75,8 +75,7 @@ unsigned long frequencyOldRead;
 
 int8_t encoderPinA = 2;   // right
 int8_t encoderPinB = 3;   // left
-
-
+unsigned int LastSwitchPosition=0;//band switch rotary switch
 
 void doVfoStep()
 {
@@ -192,7 +191,7 @@ void draw_lcd(void)
 
 void setup()
 {
- // Serial.begin(9600);
+Serial.begin(9600);
 
   // Set GPIO
   pinMode(encoderPinA, INPUT);
@@ -277,28 +276,28 @@ void loop()
     }
   } //end ritpin
 
-  //start 80mtrs;
-  int8_t resulta = digitalRead(BAND_80_MTRS);
-  //40mtrs
-  int8_t resultb = digitalRead(BAND_40_MTRS);
-  //20mtrs
-  int8_t resultc = digitalRead(BAND_20_MTRS);
-
-
-
-  if (resulta == LOW) {
-    BandNumber = 0;
-    draw_lcd();
-  }
-  //start 40mtr switch
-  else if (resultb == LOW) {
-    BandNumber = 1;
-    draw_lcd();
-  }
-  //start 20mtr switch
-  else if (resultc == LOW) {
-    BandNumber = 3;
-    draw_lcd();
+ //process the bandswitch
+ 
+ unsigned int WhichSwitchPosition = ReadRotarySwitch();
+  
+  if (WhichSwitchPosition != LastSwitchPosition){
+    // process the switch location set band to 0
+    if (WhichSwitchPosition== 1){
+       BandNumber = 3;
+       frequencyRead=0;
+       draw_lcd();
+     }
+    if (WhichSwitchPosition== 2){
+      BandNumber = 1;
+      frequencyRead=0;
+      draw_lcd();
+     }
+    if (WhichSwitchPosition== 3){
+      BandNumber = 0;
+      frequencyRead=0;
+      draw_lcd();
+     }
+    LastSwitchPosition =  WhichSwitchPosition;    
   }
 
 
@@ -350,4 +349,11 @@ void loop()
   lastState = currentState;
 
 
+}
+unsigned int ReadRotarySwitch(){
+  if(digitalRead(BAND_20_MTRS)==LOW){return 1;}
+  if(digitalRead(BAND_40_MTRS)==LOW){return 2;}
+  if(digitalRead(BAND_80_MTRS)==LOW){return 3;}
+
+  return 0;
 }

@@ -4,26 +4,6 @@
 #include <si5351.h>
 #include <LiquidCrystal_I2C.h>
 
-
-/*si5351 VFO
-  By LA3PNA  27 March 2015
-  Modified by NT7S  25 April 2015
-  Modified to be Si5351 Arduino v2 compliant by NT7S  21 Nov 2016
-  This version uses the new version of the Si5351 library from NT7S.
-  see: http://arduino.cc/en/Reference/AttachInterrupt for what pins that have interrupts.
-  UNO and 328 boards: Encoder on pin 2 and 3. Center pin to GND.
-  Leonardo: Encoder on pin 0 and 1. Center pin to GND.
-  100nF from each of the encoder pins to gnd is used to debounce
-  The pushbutton goes to pin 11 to set the tuning rate.
-  Pin 12 is the RX/TX pin. Put this pin LOW for RX, open or high for TX.
-  Single transistor switch to +RX will work.
-  VFO will NOT tune in TX.
-  LCD connections for for the LinkSprite 16 X 2 LCD Keypad Shield for Arduino.
-  Change as necessary for your LCD.
-
-  IF frequency is positive for sum product (IF = RF + LO) and negative for diff (IF = RF - LO)
-  VFO signal output on CLK0, BFO signal on CLK2
-*/
 const uint8_t encTableHalfStep[6][4] = //look up table for io 0 and 1;
 {
   {0x3, 0x2, 0x1, 0x0},
@@ -33,8 +13,6 @@ const uint8_t encTableHalfStep[6][4] = //look up table for io 0 and 1;
   {0x3, 0x3, 0x4, 0x10},
   {0x3, 0x5, 0x3, 0x20}
 };
-
-
 
 // Class instantiation
 Si5351 si5351;
@@ -73,7 +51,6 @@ unsigned long RitSavedFreqSteps = 0;
 volatile unsigned long frequencyRead = 0; // VFO 200MHZ ONLY
 unsigned long frequencyOldRead;
 
-
 int8_t encoderPinA = 2;   // right
 int8_t encoderPinB = 3;   // left
 unsigned int LastSwitchPosition=0;//band switch rotary switch
@@ -106,10 +83,6 @@ void doVfoStep()
   }
 
 }
-
-
-
-
 
 void sprintf_seperated(char *str, unsigned long num)
 {
@@ -185,7 +158,6 @@ void draw_lcd(void)
   }
 }
 
-
 void setup()
 {
 Serial.begin(9600);
@@ -227,7 +199,6 @@ Serial.begin(9600);
 
   unsigned long band = ((MhzBand[BandNumber])) + frequencyRead;
 
- // Serial.print(band);
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, corr);
   //si5351.set_freq(MhzBand[BandNumber] + frequencyRead * 100ULL, SI5351_CLK0);
   //si5351.set_freq(iffreq * 100ULL, SI5351_CLK2);
@@ -284,7 +255,6 @@ void loop()
  //process the bandswitch
  
  unsigned int WhichSwitchPosition = ReadRotarySwitch();
-  
   if (WhichSwitchPosition != LastSwitchPosition) {
     // process the switch location set band to 0
     switch (WhichSwitchPosition) {
@@ -306,9 +276,6 @@ void loop()
     }
     LastSwitchPosition = WhichSwitchPosition;    
   }
-
-
-
 
   //set frequency and draw lcd.
   if (frequencyOldRead != frequencyRead) // freq changed even when in rit
@@ -350,10 +317,7 @@ void loop()
     }
   }
 
-
-
   // save the the last state
   lastState = currentState;
-
 
 }

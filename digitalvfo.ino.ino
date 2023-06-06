@@ -44,7 +44,7 @@ const int SHORT_PRESS_TIME = 500;
 const unsigned long FreqStep[] = {50, 100, 500, 1000, 5000, 10000};
 const unsigned long MhzBand[] {3500000, 7000000, 10100000, 14000000, 18068000, 21000000, 24890000, 28000000, 50000000}; // band switch
 const unsigned long UpperFrequency[] {3800000, 7200000, 10150000, 14350000, 18168000, 24990000, 29700000, 52000000};
-const unsigned long UsefulFreqencys[] {600000, 300000, 160000, 600000};
+const unsigned long UsefulFrequencies[] {600000, 300000, 160000, 600000};
 const int8_t BUTTON_PIN = 11;
 const int8_t TX_PIN = 12;// not used
 const int8_t RIT_PIN = 10;
@@ -324,7 +324,7 @@ void loop()
     if ( pressDuration > LONG_PRESS_TIME ) {
       Serial.println("A long press is detected");
     //  BandNumber += 1;
-      if (BandNumber > BandBottom - 1 ) //dont go -1
+      if (BandNumber > BandBottom - 1 ) //oh dear
       {
         BandNumber = 0;
       }

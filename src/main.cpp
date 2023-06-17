@@ -23,13 +23,11 @@ const int SHORT_PRESS_TIME = 500;
 const unsigned long FreqStep[] = {50, 100, 500, 1000, 5000, 10000};
 const unsigned long MhzBand[] {3500000, 7000000, 10100000, 14000000, 18068000, 21000000, 24890000, 28000000, 50000000}; // band switch
 const unsigned long UpperFrequency[] {3800000, 7200000, 10150000, 14350000, 18168000, 24990000, 29700000, 52000000};
-const unsigned long UsefulFrequencies[] {600000, 300000, 160000, 600000};
+const unsigned long UsefulFrequencies[] {60000, 30000, 16000, 60000};
 const int8_t BUTTON_PIN = 11;
 const int8_t TX_PIN = 12;// not used
 const int8_t RIT_PIN = 10;
-const int8_t BAND_80_MTRS = 9;
-const int8_t BAND_40_MTRS = 8;
-const int8_t BAND_20_MTRS = 7;
+int BAND_SELECTOR_PIN=A0;
 
 #define FrequencyWidth       (sizeof(FreqStep) / sizeof(FreqStep[0]))
 #define BandBottom       (sizeof(MhzBand) / sizeof(MhzBand[0]))
@@ -53,7 +51,10 @@ unsigned long frequencyOldRead;
 
 int8_t encoderPinA = 2;   // right
 int8_t encoderPinB = 3;   // left
-unsigned int LastSwitchPosition=0;//band switch rotary switch
+int LastSwitchPosition=0;//band switch rotary switch
+int numOfSteps=10; //number of steps on bandswitch
+float divider;
+
 
 void doVfoStep()
 {
@@ -62,7 +63,7 @@ void doVfoStep()
   encState = encTableHalfStep[encState & 0xF][(digitalRead(encoderPinA) << 1) | digitalRead(encoderPinB)];
   //delay(1);
   int8_t result = encState & 0x30;
-  Serial.print(FreqStep[freqsteps]);
+  //Serial.print(FreqStep[freqsteps]);
   //Serial.println("bandwidth" );
   //Serial.println(UpperFrequency[BandNumber] - MhzBand[BandNumber]);
   if (result == 0x10) {
@@ -168,17 +169,14 @@ Serial.begin(9600);
   pinMode(BUTTON_PIN, INPUT_PULLUP);
   pinMode(TX_PIN, INPUT_PULLUP);
   pinMode(RIT_PIN, INPUT_PULLUP);
-  pinMode(BAND_80_MTRS, INPUT_PULLUP);
-  pinMode(BAND_40_MTRS, INPUT_PULLUP);
-  pinMode(BAND_20_MTRS, INPUT_PULLUP);
+  pinMode(BAND_SELECTOR_PIN, INPUT);
+  divider = 1024.0 / numOfSteps;//FOR BAND SWITCH.
   // Turn on pullup resistors
   digitalWrite(encoderPinA, HIGH);
   digitalWrite(encoderPinB, HIGH);
   digitalWrite(TX_PIN, HIGH);
   digitalWrite(RIT_PIN, HIGH);
-  digitalWrite(BAND_80_MTRS, HIGH);
-  digitalWrite(BAND_40_MTRS, HIGH);
-  digitalWrite(BAND_20_MTRS, HIGH);
+
   // encoder pin on interrupt 0 (pin 2) changed for half steps.
   attachInterrupt(digitalPinToInterrupt(encoderPinA), doVfoStep, CHANGE);
 
@@ -197,7 +195,7 @@ Serial.begin(9600);
   lcd.setCursor(0, 3);
   lcd.print("Rit off");
 
-  unsigned long band = ((MhzBand[BandNumber])) + frequencyRead;
+  //unsigned long band = ((MhzBand[BandNumber])) + frequencyRead;
 
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, corr);
   //si5351.set_freq(MhzBand[BandNumber] + frequencyRead * 100ULL, SI5351_CLK0);
@@ -205,13 +203,7 @@ Serial.begin(9600);
   draw_lcd();
 }
 
-unsigned int ReadRotarySwitch(){
-  if(digitalRead(BAND_20_MTRS)==LOW){return 1;}
-  if(digitalRead(BAND_40_MTRS)==LOW){return 2;}
-  if(digitalRead(BAND_80_MTRS)==LOW){return 3;}
 
-  return 0;
-}
 
 void loop()
 {
@@ -253,22 +245,58 @@ void loop()
   } //end ritpin
 
  //process the bandswitch
- 
- unsigned int WhichSwitchPosition = ReadRotarySwitch();
+   float selectorValueFloat = round(analogRead(BAND_SELECTOR_PIN) / divider);
+  int WhichSwitchPosition = selectorValueFloat;
+
   if (WhichSwitchPosition != LastSwitchPosition) {
     // process the switch location set band to 0
     switch (WhichSwitchPosition) {
+      case 0:
+        BandNumber = 9;
+        frequencyRead=0;
+        draw_lcd();
+        break;
       case 1:
-        BandNumber = 3;
+        BandNumber = 8;
         frequencyRead=0;
         draw_lcd();
         break;
       case 2:
-        BandNumber = 1;
+        BandNumber = 7;
         frequencyRead=0;
         draw_lcd();
         break;
       case 3:
+        BandNumber = 6;
+        frequencyRead=0;
+        draw_lcd();
+        break;
+      case 4:
+        BandNumber = 5;
+        frequencyRead=0;
+        draw_lcd();
+        break;
+      case 5:
+        BandNumber = 4;
+        frequencyRead=0;
+        draw_lcd();
+        break;
+      case 6:
+        BandNumber = 3;
+        frequencyRead=0;
+        draw_lcd();
+        break;
+      case 7:
+        BandNumber = 2;
+        frequencyRead=0;
+        draw_lcd();
+        break;
+      case 8:
+        BandNumber = 1;
+        frequencyRead=0;
+        draw_lcd();
+        break;
+      case 9:
         BandNumber = 0;
         frequencyRead=0;
         draw_lcd();

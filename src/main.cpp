@@ -22,7 +22,7 @@ const int SHORT_PRESS_TIME = 500;
 
 const unsigned long FreqStep[] = {50, 100, 500, 1000, 5000, 10000};
 const unsigned long MhzBand[] {3500000, 7000000, 10100000, 14000000, 18068000, 21000000, 24890000, 28000000, 50000000}; // band switch
-const unsigned long UpperFrequency[] {3800000, 7200000, 10150000, 14350000, 18168000, 24990000, 29700000, 52000000};
+const unsigned long UpperFrequency[] {3800000, 7200000, 10150000, 14350000, 18168000, 21450000, 24990000, 29700000,52000000};
 const unsigned long UsefulFrequencies[] {60000, 30000, 16000, 60000};
 const int8_t BUTTON_PIN = 11;
 const int8_t TX_PIN = 12;// not used
@@ -133,7 +133,7 @@ void sprintf_seperated(char *str, unsigned long num)
     strcat(str, temp_str);
   }
 
-  strcat(str, " MHz");
+  strcat(str, " MHz ");
 }
 
 void draw_lcd(void)
@@ -195,7 +195,6 @@ Serial.begin(9600);
   lcd.setCursor(0, 3);
   lcd.print("Rit off");
 
-  //unsigned long band = ((MhzBand[BandNumber])) + frequencyRead;
 
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, corr);
   //si5351.set_freq(MhzBand[BandNumber] + frequencyRead * 100ULL, SI5351_CLK0);
@@ -249,7 +248,7 @@ void loop()
   int WhichSwitchPosition = selectorValueFloat;
 
   if (WhichSwitchPosition != LastSwitchPosition) {
-    // process the switch location set band to 0
+    // process the band switch
     switch (WhichSwitchPosition) {
       case 0:
         BandNumber = 9;

@@ -23,7 +23,7 @@ const int SHORT_PRESS_TIME = 500;
 const unsigned long FreqStep[] = {50, 100, 500, 1000, 5000, 10000};
 const unsigned long MhzBand[] {1800000,3500000, 7000000, 10100000, 14000000, 18068000, 21000000, 24890000, 28000000, 50000000}; // band switch
 const unsigned long UpperFrequency[] {2000000,3800000, 7200000, 10150000, 14350000, 18168000, 21450000, 24990000, 29700000,52000000};
-const unsigned long UsefulFrequencies[] {60000, 30000, 16000, 60000};
+const unsigned long UsefulFrequencies[10][2] = {{36000,43000},{55000,60000},{30000, 90000},{16000,0},{55000,60000},{86000,130000},{55000,60000},{906000,950000},{55000,60000},{50000,90000},};
 const int8_t BUTTON_PIN = 11;
 const int8_t TX_PIN = 12;// not used
 const int8_t RIT_PIN = 10;
@@ -323,15 +323,15 @@ void loop()
     int pressDuration = releasedTime - pressedTime;
 
     if ( pressDuration > LONG_PRESS_TIME ) {
-      Serial.println("A long press is detected");
-    //  BandNumber += 1;
-      if (BandNumber > BandBottom - 1 ) //oh dear
-      {
-        BandNumber = 0;
-      }
+    //  Serial.println("A long press is detected");
+       static int i=0; 
+
+       frequencyRead = UsefulFrequencies [BandNumber][i];
+       i = i ? 0 : 1;
+
       draw_lcd();
-      frequencyRead = 0; //set frquency to 0
     }
+
     if ( pressDuration < SHORT_PRESS_TIME ) {
       Serial.println("A short press is detected");
       freqsteps += 1;

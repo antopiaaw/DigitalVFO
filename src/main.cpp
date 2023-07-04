@@ -14,6 +14,18 @@ const uint8_t encTableHalfStep[6][4] = //look up table for io 0 and 1;
   {0x3, 0x5, 0x3, 0x20}
 };
 
+const uint8_t encTableFullStep[7][4] =
+{
+    {0x0, 0x2, 0x4,  0x0},
+    {0x3, 0x0, 0x1, 0x10},
+    {0x3, 0x2, 0x0,  0x0},
+    {0x3, 0x2, 0x1,  0x0},
+    {0x6, 0x0, 0x4,  0x0},
+    {0x6, 0x5, 0x0, 0x20},
+    {0x6, 0x5, 0x4,  0x0},
+};
+
+
 // Class instantiation
 Si5351 si5351;
 LiquidCrystal_I2C lcd(0x27, 20, 4);
@@ -46,7 +58,7 @@ int8_t freqsteps = 0; //placement for the vfo steps on the Freqsteps[]
 unsigned long RitSavedRxFrequency = 0; //save frequwndy
 bool IsInRit = false;//are we in rit function
 unsigned long RitSavedFreqSteps = 0;
-volatile unsigned long frequencyRead = 0; // VFO 200MHZ ONLY
+volatile unsigned long frequencyRead = 0; // VFO stops at band top
 unsigned long frequencyOldRead;
 
 int8_t encoderPinA = 2;   // right
@@ -154,7 +166,7 @@ void draw_lcd(void)
     lcd.setCursor(2, 1);
     lcd.print(temp_str);
     lcd.setCursor(6, 2);
-    sprintf(temp_str, "%5u", FreqStep[freqsteps]);
+    sprintf(temp_str, "%5d", FreqStep[freqsteps]);
     lcd.print(temp_str);
   }
 }
@@ -197,9 +209,11 @@ Serial.begin(9600);
 
 
   si5351.init(SI5351_CRYSTAL_LOAD_8PF, 0, corr);
-  //si5351.set_freq(MhzBand[BandNumber] + frequencyRead * 100ULL, SI5351_CLK0);
-  //si5351.set_freq(iffreq * 100ULL, SI5351_CLK2);
   draw_lcd();
+
+  //si5351.set_freq((MhzBand[BandNumber] + frequencyRead) * 100ULL, SI5351_CLK0);
+  //si5351.set_freq(iffreq * 100ULL, SI5351_CLK2);
+  
 }
 
 
@@ -252,55 +266,38 @@ void loop()
     switch (WhichSwitchPosition) {
       case 0:
         BandNumber = 9;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 1:
         BandNumber = 8;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 2:
         BandNumber = 7;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 3:
         BandNumber = 6;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 4:
         BandNumber = 5;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 5:
         BandNumber = 4;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 6:
         BandNumber = 3;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 7:
         BandNumber = 2;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 8:
         BandNumber = 1;
-        frequencyRead=0;
-        draw_lcd();
         break;
       case 9:
         BandNumber = 0;
-        frequencyRead=0;
-        draw_lcd();
         break;
     }
+    frequencyRead=0;
+    draw_lcd();
+    si5351.set_freq((MhzBand[BandNumber] + frequencyRead)* 100ULL, SI5351_CLK0);
     LastSwitchPosition = WhichSwitchPosition;    
   }
 
@@ -308,10 +305,12 @@ void loop()
   if (frequencyOldRead != frequencyRead) // freq changed even when in rit
   {
     frequencyOldRead = frequencyRead; // update frequency
-    si5351.set_freq((MhzBand[BandNumber] + frequencyRead)*100ULL, SI5351_CLK0);
-    draw_lcd(); // update screen to show new freq
+   // 
+    si5351.set_freq((MhzBand[BandNumber] + frequencyRead)* 100ULL, SI5351_CLK0);
+   //                        ^needs 64bit number^   
+       draw_lcd(); // update screen to show new freq
   }
-  // si5351.set_freq(( MhzBand[BandNumber] + frequencyRead) * 100ULL, SI5351_CLK0);
+ 
   // read the state of the switch/button:
   currentState = digitalRead(BUTTON_PIN);
 
